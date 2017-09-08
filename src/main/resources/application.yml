@@ -1,0 +1,22 @@
+gift:
+    activityName: "中秋节"
+    quota: 1000
+    pigId: "e08b8190684f438db922580bc42a7d8f"
+    requestNum: 20
+    pigPlace:
+    - '济南'
+    - '青岛'
+    - '烟台'
+    - '上海'
+    - '北京'
+spring:
+  profiles:
+    active: "pro"
+logging:
+  file: gift.log
+  level:
+    org:
+      mybatis: TRACE
+      springframework: INFO
+      com.sda.savers: TRACE
+      com.sda.savers.mapper: DEBUG

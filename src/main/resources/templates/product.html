@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=0"/>
+    <script th:src="@{/vendors/jquery/dist/jquery.js}"></script>
+    <script th:src="@{/js/jquery.serializejson.js}"></script>
+    <script th:src="@{/vendors/pnotify/dist/pnotify.js}"></script>
+    <link rel="stylesheet" th:href="@{/vendors/bootstrap/dist/css/bootstrap.css}"/>
+    <link rel="stylesheet" th:href="@{/vendors/pnotify/dist/pnotify.css}"/>
+    <link rel="stylesheet" th:href="@{/vendors/pnotify/dist/pnotify.brighttheme.css}"/>
+
+
+    <style>
+        .price{
+            border-width:0;
+            width:3.2rem;
+            height:2.0rem;
+            line-height: 2.0rem;
+            font-size:1.5rem;
+            text-align: center;
+        }
+    </style>
+    <title>产品列表</title>
+</head>
+<body>
+<div>
+    <nav class="navbar navbar-default" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <div class="navbar-brand">
+                    <span  th:text="${userName}"></span>，佳节来临之际，山东航空祝您中秋快乐！阖家幸福！
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+        <ul class="list-group">
+            <div class="list-group-item active">
+                <div class="row">
+                    <div class="col-xs-5 text-left">
+                        名称
+                    </div>
+                    <div class="col-xs-3 text-center">
+                        单价
+                    </div>
+                    <div class="col-xs-4 text-right">
+                        数量
+                    </div>
+                </div>
+            </div>
+            <form id="productForm">
+                <th:block th:each="product:${productList}">
+                    <li class="list-group-item" style="font-size: 1.5rem;">
+                        <div class="row" style="line-height: 3rem">
+                            <div class="col-xs-5 text-left">
+                                <span th:text="${product.ProName}"></span>
+                            </div>
+                            <div class="col-xs-2 text-center">
+                                <span th:text="${product.ProPrice}"></span>
+                            </div>
+                            <div class="col-xs-5 text-center" th:if="${product.ProName}=='中秋月饼'">
+                                <input type="text" class="price" readonly="readonly"  th:id="${product.proId}" th:name="${product.proId}" th:value="2"/>
+                            </div>
+                            <div class="col-xs-5 text-right" th:unless="${product.ProName}=='中秋月饼'">
+                                <button type="button" class="btn btn-default btn-sm" th:value="${product.ProPrice}" onclick="minus($(this))">-</button><input type="text" class="price" readonly="readonly"  th:id="${product.proId}" th:name="${product.proId}" th:value="${product.proNum}"/><button type="button" class="btn btn-default btn-sm" th:value="${product.ProPrice}" onclick="add($(this))">+</button>
+                            </div>
+                        </div>
+                    </li>
+                </th:block>
+
+                <li class="list-group-item" style="font-size: 1.5rem;">
+                    <div class="row" style="line-height: 3rem">
+                        <div class="col-xs-6 text-left">
+                            请选择领取地点
+                        </div>
+
+                        <div class="col-xs-6 text-right" >
+                            <select class="form-control" id="takePlace" name="takePlace">
+                                <option th:selected="${takePlace} == '济南'">济南</option>
+                                <option th:selected="${takePlace} == '青岛'">青岛</option>
+                                <option th:selected="${takePlace} == '烟台'">烟台</option>
+                                <option th:selected="${takePlace} == '厦门'">厦门</option>
+                                <option th:selected="${takePlace} == '重庆'">重庆</option>
+                                <option th:selected="${takePlace} == '北京'">北京</option>
+                                <option th:selected="${takePlace} == '乌鲁木齐'">乌鲁木齐</option>
+                            </select>
+                        </div>
+                    </div>
+                </li>
+                <li class="list-group-item" style="font-size: 1.5rem;">
+                    <div class="row"  style="line-height: 3rem">
+                        <div class="col-xs-6 text-left">
+                            请选择领取时间
+                        </div>
+
+                        <div class="col-xs-6 text-right ">
+                            <select class="form-control" id="takeTime" name="takeTime">
+                                <option th:selected="${takeTime} == '9月25日-10月10日'">9月25日-10月10日</option>
+                                <option th:selected="${takeTime} == '10月10日-10月31日'">10月10日-10月31日</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!--</div>-->
+                </li>
+                <li class="list-group-item" style="font-size: 1.5rem;">
+                    <div class="row" style="line-height: 3rem">
+                        <div class="col-xs-6 text-left">
+                            总价
+                        </div>
+
+                        <div class="col-xs-6 text-right">
+                            <input type="text" style="border-width: 0;width: 60px" readonly="readonly" id="totalPrice" name="totalPrice" th:value="${totalPrice}"/>
+                        </div>
+                    </div>
+                </li>
+            </form>
+        </ul>
+        <input type="button" onclick="chooseProduct()" value="提交" class="btn btn-warning btn-block btn-lg" style="margin-bottom: 1rem"/>
+    </div>
+    <p></p>
+    <p></p>
+</div>
+</body>
+<script type="text/javascript"  th:inline="javascript">
+    /*<![CDATA[*/
+
+    var stack_center = {"dir1": "down", "dir2": "right", "firstpos1": 125, "firstpos2": ($(window).width() / 2) - (Number(PNotify.prototype.options.width.replace(/\D/g, '')) / 2)};
+    $(window).resize(function(){
+        stack_center.firstpos2 = ($(window).width() / 2) - (Number(PNotify.prototype.options.width.replace(/\D/g, '')) / 2);
+    });
+    function add (obj) {
+        var num = $(obj).prev().val();
+        $(obj).prev().val(++num);
+        var totalPrice = $("#totalPrice").val();
+        var price = $(obj).val();
+        totalPrice = totalPrice*1 + price*1;
+        $("#totalPrice").val(totalPrice)
+    }
+    function minus (obj) {
+        var num = $(obj).next().val();
+        if(num==0){
+            return;
+        }
+        $(obj).next().val(--num);
+        var totalPrice = $("#totalPrice").val();
+        var price = $(obj).val();
+        totalPrice = totalPrice*1 - price*1;
+        $("#totalPrice").val(totalPrice);
+    }
+
+    function chooseProduct() {
+        var quota = [[${quota}]];
+        var totalPrice = $("#totalPrice").val()
+        if(Number(totalPrice)>Number(quota)){
+            new PNotify({
+                title: '对不起',
+                text: "不能超出额度"+quota,
+                type: 'error',
+                styling: 'bootstrap3',
+                delay:3000,
+                stack: stack_center
+            });
+            return false;
+        }
+        var formData = $("#productForm").serialize();
+        $.post('/product/chooseProduct',formData,function (response, status,request) {
+            if (request.getResponseHeader('ACCESS') === '1') {
+                window.location = '/login/';
+            }
+            if(response.success==true){
+                new PNotify({
+                    title: '恭喜您',
+                    text: response.message,
+                    type: 'success',
+                    styling: 'bootstrap3',
+                    delay:3000,
+                    stack: stack_center
+                });
+            }else{
+                new PNotify({
+                    title: '对不起',
+                    text: response.message,
+                    type: 'error',
+                    styling: 'bootstrap3',
+                    delay:3000,
+                    stack: stack_center
+                });
+            }
+        });
+    }
+    /*]]>*/
+</script>
+</html>

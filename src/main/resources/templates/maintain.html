@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>慰问品管理</title>
+    <script th:src="@{/vendors/jquery/dist/jquery.js}"></script>
+    <script th:src="@{/vendors/bootstrap/dist/js/bootstrap.min.js}"></script>
+    <link rel="stylesheet" th:href="@{/vendors/bootstrap/dist/css/bootstrap.min.css}"/>
+</head>
+<body>
+<div class="container">
+    <ul class="list-group">
+        <li class="list-group-item active">
+            <div class="row">
+                <div class="col-xs-2 text-center">
+                    名称
+                </div>
+                <div class="col-xs-2 text-center">
+                    单价
+                </div>
+                <div class="col-xs-4 text-center">
+                    备注
+                </div>
+                <div class="col-xs-1 text-center">
+                    状态
+                </div>
+                <div class="col-xs-3 text-center">
+                    操作
+                </div>
+            </div>
+        </li>
+        <th:block th:each="product:${productList}">
+            <li class="list-group-item" style="font-size: 1.8rem;">
+                <div class="row">
+                    <div class="col-xs-2 text-center text-nowrap">
+                        <span th:text="${product.proName}"></span>
+                    </div>
+                    <div class="col-xs-2 text-center">
+                        <span th:text="${product.proPrice}"></span>
+                    </div>
+                    <div class="col-xs-4 text-center">
+                        <span th:text="${product.proDescription}"></span>
+                    </div>
+                    <div th:switch="${product.available}" class="col-xs-1 text-center">
+                        <span th:case="0">启用</span>
+                        <span th:case="1">禁用</span>
+                    </div>
+                    <div class="col-xs-3 text-center text-nowrap">
+                        <button th:value="${product.guid}" class="btn btn-sm btn-primary" onclick="javascript:editProduct(this)" data-toggle="modal" data-target="#editModal">编辑</button>
+                    </div>
+                </div>
+            </li>
+        </th:block>
+        <div class="list-group-item active">
+            <button class="btn btn-sm btn-default" data-toggle="modal" data-target="#addModal">添加物品</button>
+            <button onclick="getExcel()" class="btn btn-sm btn-default">导出订单</button>
+        </div>
+    </ul>
+    <!-- 模态框（Modal） -->
+    <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                    <h4 class="modal-title" id="EditModalLabel">
+                        物品管理
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <form role="form" id="editForm">
+                        <div class="form-group">
+                            <label>名称</label>
+                            <input type="hidden" id="proEditGuid" name="guid" class="form-control" placeholder="文本输入"/>
+                            <input type="text" id="proEditName" name="proName" class="form-control" placeholder="文本输入"/>
+                        </div>
+                        <br/>
+                        <div class="form-group">
+                            <label>价格</label>
+                            <input type="text" id="proEditPrice" name="proPrice" class="form-control" placeholder="文本输入"/>
+                        </div>
+                        <br/>
+                        <div class="form-group">
+                            <label>备注</label>
+                            <textarea  id="proEditDescription" name="proDescription" class="form-control" rows="3"></textarea>
+                        </div>
+                        <br/>
+                        <label class="radio-inline">
+                            <input type="radio" class="edit-product" name="available"  value="0"/> 启用
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" class="edit-product" name="available"  value="1"/> 禁用
+                        </label>
+                    </form>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                    </button>
+                    <input type="button" class="btn btn-primary" th:value="保存" onclick="saveProduct()"/>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="addModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                    <h4 class="modal-title" id="addModalLabel">
+                        物品管理
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <form role="form" id="addForm">
+                        <div class="form-group">
+                            <label>名称</label>
+                            <input type="text" id="proAddName" name="proName" class="form-control" placeholder="文本输入"/>
+                        </div>
+                        <br/>
+                        <div class="form-group">
+                            <label>价格</label>
+                            <input type="text" id="proAddPrice" name="proPrice" class="form-control" placeholder="文本输入"/>
+                        </div>
+                        <br/>
+                        <div class="form-group">
+                            <label>备注</label>
+                            <textarea  id="proAddDescription" name="proDescription" class="form-control" rows="3"></textarea>
+                        </div>
+                        <br/>
+                        <label class="radio-inline">
+                            <input type="radio" name="available" checked="checked"  value="0"/> 启用
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="available"  value="1"/> 禁用
+                        </label>
+                    </form>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                    </button>
+                    <input value="添加" type="button" class="btn btn-primary" onclick="addProduct()"/>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script type="text/javascript" th:inline="javascript">
+    /*<![CDATA[*/
+    function editProduct(obj) {
+        var proId = obj.value;
+        var proMap = [[${productMap}]];
+        var product = proMap[proId];
+
+        $("#proEditGuid").val(product["guid"]);
+        $("#proEditName").val(product["proName"]);
+        $("#proEditPrice").val(product["proPrice"]);
+        $("#proEditDescription").val(product["proDescription"]);
+        $("#available").val(product["proDescription"]);
+        if(product["available"]=='0'){
+            $("input[type='radio'][name='available'][class='edit-product'][value='0']").attr("checked", "checked");
+        } else{
+            $("input[type='radio'][name='available'][class='edit-product'][value='1']").attr("checked", "checked");
+        }
+    }
+    /*]]>*/
+
+    function saveProduct() {
+        var formData = $('#editForm').serialize();
+        $.post('/maintain/saveProduct', formData, function(response) {
+            window.location.reload()
+        });
+    }
+
+    function addProduct() {
+        var formData = $('#addForm').serialize();
+        $.post('/maintain/addProduct', formData, function(response) {
+            window.location.reload()
+        });
+    }
+
+    function getExcel() {
+        window.location = "/maintain/excel";
+    }
+</script>
+</html>
